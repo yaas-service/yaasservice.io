@@ -7,8 +7,7 @@
     "start": "node api/index.js",
     "dev": "nodemon api/index.js",
     "build": "mkdir -p public && cp index.html public/index.html",
-    "vercel-build": "npm install && npm run build",
-    "deploy": "vercel deploy --prod"
+    "vercel-build": "npm install && npm run build"
   },
   "repository": {
     "type": "git",
@@ -43,11 +42,20 @@
   },
   "vercel": {
     "builds": [
-      { "src": "api/index.js", "use": "@vercel/node" }
+      {
+        "src": "api/index.js",
+        "use": "@vercel/node"
+      }
     ],
     "routes": [
-      { "src": "/api/(.*)", "dest": "/api/index.js" },
-      { "src": "/", "dest": "/index.html" }
+      {
+        "src": "/api/(.*)",
+        "dest": "/api/index.js"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/public/index.html"
+      }
     ],
     "env": {
       "NODE_ENV": "production"
