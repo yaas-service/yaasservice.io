@@ -5,28 +5,53 @@
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
+    "dev": "nodemon api/index.js",
     "build": "mkdir -p public && cp index.html public/index.html",
-    "vercel-build": "npm install && npm run build"
+    "vercel-build": "npm install && npm run build",
+    "deploy": "vercel deploy --prod"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/yaas-service/yaas-vercel.git"
   },
-  "keywords": ["yes", "mock-api", "YaaS", "automation", "webhooks"],
+  "keywords": [
+    "yes",
+    "mock-api",
+    "YaaS",
+    "automation",
+    "webhooks",
+    "instant-approval",
+    "microservice"
+  ],
   "author": "YaaS Service",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "express": "^5.1.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "nodemon": "^2.0.22"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "dotenv": "^16.0.3"
+  },
   "bugs": {
     "url": "https://github.com/yaas-service/yaas-vercel/issues"
   },
   "homepage": "https://yaasservice.io",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "vercel": {
+    "builds": [
+      { "src": "api/index.js", "use": "@vercel/node" }
+    ],
+    "routes": [
+      { "src": "/api/(.*)", "dest": "/api/index.js" },
+      { "src": "/", "dest": "/index.html" }
+    ],
+    "env": {
+      "NODE_ENV": "production"
+    }
   }
 }
 
