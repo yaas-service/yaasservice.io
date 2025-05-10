@@ -6,7 +6,8 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    { "src": "/(.*)", "dest": "/public/$1" },
+    { "src": "www.yaasservice.io", "headers": { "Location": "https://yaasservice.io" }, "status": 301 }
   ]
 }
 
