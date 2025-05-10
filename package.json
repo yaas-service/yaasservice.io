@@ -1,0 +1,23 @@
+{
+  "name": "yaas_docker_deployment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "worker.js",
+  "scripts": {
+    "start": "node worker.js",
+    "build": "echo 'No build step necessary'",
+    "vercel-build": "echo 'Vercel Build Completed Successfully'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://yaas-service@github.com/yaas-service/yaas-vercel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/yaas-service/yaas-vercel/issues"
+  },
+  "homepage": "https://github.com/yaas-service/yaas-vercel#readme"
+}
