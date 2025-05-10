@@ -5,8 +5,8 @@
   "main": "worker.js",
   "scripts": {
     "start": "node worker.js",
-    "build": "echo 'No build step necessary'",
-    "vercel-build": "echo 'Vercel Build Completed Successfully'"
+    "build": "mkdir -p public && cp index.html public/index.html",
+    "vercel-build": "npm run build"
   },
   "repository": {
     "type": "git",
