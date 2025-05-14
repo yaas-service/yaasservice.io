@@ -4,17 +4,23 @@ import serverless from 'serverless-http';
 const app = express();
 app.use(express.json());
 
-// Health Check Route
+const PORT = process.env.PORT || 8080;
+
 app.get('/api/v1/health', (req, res) => {
-  console.log('Health Check Invoked');
+  console.log('🌐 Health Check Invoked');
   try {
     res.status(200).json({ status: "YaaS Service is Running!" });
   } catch (error) {
-    console.error('Error in health check:', error);
+    console.error('🔥 Error in health check:', error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// Wrap express app in serverless-http and export the handler correctly
+if (process.env.NODE_ENV === 'development') {
+  app.listen(PORT, () => {
+    console.log(`🌐 Local server running at http://localhost:${PORT}`);
+  });
+}
+
 module.exports = app;
 module.exports.handler = serverless(app);
