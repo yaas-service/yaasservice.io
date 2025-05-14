@@ -4,9 +4,16 @@ import serverless from 'serverless-http';
 const app = express();
 app.use(express.json());
 
-app.get('/v1/health', (req, res) => {
+// Health Check Route
+app.get('/api/v1/health', (req, res) => {
   console.log('Health Check Invoked');
-  res.status(200).json({ status: "YaaS Service is Running!" });
+  try {
+    res.status(200).json({ status: "YaaS Service is Running!" });
+  } catch (error) {
+    console.error('Error in health check:', error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-export const handler = serverless(app);
+// Wrap express app in serverless-http and export only the handler
+module.exports.handler = serverless(app);

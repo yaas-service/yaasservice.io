@@ -3,11 +3,18 @@
   "functions": {
     "api/index.js": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 60,
+      "environmentVariables": ["NODE_ENV", "PORT"]
     }
   },
   "routes": [
     { "src": "/api/v1/health", "dest": "/api/index.js" },
-    { "src": "/api/(.*)", "dest": "/api/index.js" }
-  ]
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/", "dest": "/public/index.html" }
+  ],
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }
 }
