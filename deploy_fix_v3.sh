@@ -62,8 +62,7 @@ cat > vercel.json <<EOL
   "functions": {
     "api/index.js": {
       "memory": 1024,
-      "maxDuration": 60,
-      "environmentVariables": ["NODE_ENV", "PORT"]
+      "maxDuration": 60
     }
   },
   "routes": [
