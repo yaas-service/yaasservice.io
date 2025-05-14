@@ -10,5 +10,6 @@ app.get('/api/v1/health', (req, res) => {
   res.status(200).json({ status: "YaaS Service is Running!" });
 });
 
-// Export the app wrapped in serverless
-export default serverless(app);
+// Wrap express app in serverless-http
+module.exports = app;
+module.exports.handler = serverless(app);
