@@ -10,5 +10,6 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: "YaaS Service is Running!" });
 });
 
-// Export the serverless handler directly
-module.exports = serverless(app);
+// Explicitly export the serverless handler
+const handler = serverless(app);
+export { handler };
