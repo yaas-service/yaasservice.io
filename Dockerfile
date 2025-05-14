@@ -1,4 +1,3 @@
-
 # Use the official Node.js image as the base
 FROM node:16
 
@@ -16,4 +15,5 @@ COPY . .
 EXPOSE 8080
 
 # Start the application
-CMD ["node", "worker.js"]
+CMD ["npm", "start"]
+

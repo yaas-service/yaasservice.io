@@ -1,26 +1,14 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import { VercelRequest, VercelResponse } from '@vercel/node';
+
 const app = express();
-const port = 8080;
+app.use(express.json());
 
-// Middleware to serve static files
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Serve the index.html when visiting "/"
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../index.html'));
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({ status: "YaaS Service is Running!" });
 });
 
-app.post('/api', (req, res) => {
-  console.log("Received request:", req.body);
-  res.json({ response: "yes" });
-});
-
-app.get('/api/status', (req, res) => {
-  res.json({ status: "operational" });
-});
-
-app.listen(port, () => {
-  console.log(`YaaS running at http://localhost:${port}`);
-});
-
+// Vercel handler
+export default (req, res) => {
+  app(req, res);
+};

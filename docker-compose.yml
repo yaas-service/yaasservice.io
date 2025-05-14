@@ -1,7 +1,22 @@
+version: "3.9"
 
-version: '3'
 services:
   yaas-service:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: yaas-docker-local-yaas-service:latest
+    container_name: yaas-docker-local-yaas-service
     ports:
-      - "8080:8080"
+      - "8080:8080"   # This matches with the EXPOSE in Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 8080  # You can dynamically override this with deploy.sh
+    networks:
+      - yaas-network
+    restart: always
+
+networks:
+  yaas-network:
+    driver: bridge
+
