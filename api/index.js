@@ -1,6 +1,7 @@
 import express from 'express';
+import { VercelRequest, VercelResponse } from '@vercel/node';
+
 const app = express();
-const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 
@@ -10,5 +11,7 @@ app.get('/api/v1/health', (req, res) => {
   res.status(200).json({ status: "YaaS Service is Running!" });
 });
 
-// Vercel Serverless Function Handler
-export default app;
+// Export the app to be used as a Vercel serverless function
+export default (req, res) => {
+  app(req, res);
+};
