@@ -16,4 +16,5 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 // Wrap express app in serverless-http and export the handler correctly
-export const handler = serverless(app);
+module.exports = app;
+module.exports.handler = serverless(app);
