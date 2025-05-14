@@ -5,11 +5,10 @@ const app = express();
 app.use(express.json());
 
 // Health Check Route
-app.get('/api/v1/health', (req, res) => {
+app.get('/health', (req, res) => {
   console.log('Health Check Invoked');
   res.status(200).json({ status: "YaaS Service is Running!" });
 });
 
-// Wrap express app in serverless-http
-module.exports = app;
-module.exports.handler = serverless(app);
+// Export the serverless handler directly
+module.exports = serverless(app);
