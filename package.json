@@ -29,7 +29,8 @@
   "author": "YaaS Service",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",
