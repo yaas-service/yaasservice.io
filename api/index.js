@@ -24,5 +24,5 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// ES Module Export
-export const handler = serverless(app);
+// ✅ Correct ES Module export
+export default serverless(app);
