@@ -14,7 +14,6 @@
   "build": {
     "env": {
       "NODE_ENV": "production",
-      "EDGE_CONFIG": "@yaas-config",
       "CLOUDFLARE_ANALYTICS": "3296fcb8f09c45098abb14a4bcf7821b"
     }
   }
