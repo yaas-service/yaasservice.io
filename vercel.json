@@ -1,7 +1,20 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 15,
+      "includeFiles": "config/**"
+    }
+  },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/", "dest": "/public/index.html" }
-  ]
+  ],
+  "env": {
+    "JWT_SECRET": "@yaas-jwt-secret",
+    "API_KEY": "@yaas-api-key",
+    "EDGE_CONFIG": "@yaas-edge-config",
+    "ENABLE_PREMIUM": "true"
+  }
 }
