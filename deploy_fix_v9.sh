@@ -9,7 +9,7 @@ echo "📦 Installing Dependencies..."
 rm -rf node_modules package-lock.json
 npm install
 
-# 3️⃣ Update `api/index.js`
+# 3️⃣ Update API Handler
 echo "🚀 Updating API Handler..."
 cat > api/index.js <<EOL
 import express from 'express';
@@ -20,7 +20,6 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
 
-// Health Check Route
 app.get('/api/v1/health', (req, res) => {
   console.log('🌐 Health Check Invoked');
   try {
@@ -31,37 +30,65 @@ app.get('/api/v1/health', (req, res) => {
   }
 });
 
-// Local development server
 if (process.env.NODE_ENV === 'development') {
   app.listen(PORT, () => {
     console.log(\`🌐 Local server running at http://localhost:\${PORT}\`);
   });
 }
 
-// ✅ Correct ES Module export
-export default serverless(app);
+export default app;
+export const handler = serverless(app);
 EOL
 echo "✅ API handler updated successfully."
 
-# 4️⃣ Stage, Commit, and Push Changes
+# 4️⃣ Update Vercel Configuration
+echo "🚀 Updating Vercel Configuration..."
+cat > vercel.json <<EOL
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/", "dest": "/public/index.html" }
+  ],
+  "build": {
+    "env": {
+      "NODE_ENV": "production",
+      "CLOUDFLARE_ANALYTICS": "3296fcb8f09c45098abb14a4bcf7821b"
+    }
+  }
+}
+EOL
+echo "✅ Vercel configuration updated successfully."
+
+# 5️⃣ Stage, Commit, and Push Changes
 echo "🔄 Staging Changes..."
 git add .
 git commit -m "Fix ES Modules, handler export, and Vercel routing configuration"
 git push origin main
 
-# 5️⃣ Deploy to Vercel
+# 6️⃣ Deploy to Vercel
 echo "🚀 Deploying to Vercel..."
 vercel deploy --prod
 
-# 6️⃣ Purge Cloudflare Cache (replace with your credentials)
+# 7️⃣ Purge Cloudflare Cache
 echo "🚀 Purging Cloudflare Cache..."
-curl -X POST "https://api.cloudflare.com/client/v4/zones/YOUR_ZONE_ID/purge_cache" \
-     -H "X-Auth-Email: YOUR_CLOUDFLARE_EMAIL" \
-     -H "X-Auth-Key: YOUR_CLOUDFLARE_API_KEY" \
+CLOUDFLARE_TOKEN="tU8_WGyIrFyI5zAJpxwcDTMMnbtE7VMtyHzDSpRh"
+CLOUDFLARE_ZONE_ID="a44048aba7521e90edbddbae88f94d89"
+
+curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+     -H "Authorization: Bearer $CLOUDFLARE_TOKEN" \
      -H "Content-Type: application/json" \
      --data '{"purge_everything":true}'
 
-# 7️⃣ Perform Health Check
+echo "✅ Cloudflare cache purged."
+
+# 8️⃣ Perform Health Check
 echo "🌐 Performing Health Check..."
 echo "Testing: https://yaasservice.io/api/v1/health"
 curl -L https://yaasservice.io/api/v1/health
