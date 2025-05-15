@@ -6,6 +6,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
 
+// Health Check Route
 app.get('/api/v1/health', (req, res) => {
   console.log('🌐 Health Check Invoked');
   try {
@@ -16,11 +17,12 @@ app.get('/api/v1/health', (req, res) => {
   }
 });
 
+// Local development server
 if (process.env.NODE_ENV === 'development') {
   app.listen(PORT, () => {
     console.log(`🌐 Local server running at http://localhost:${PORT}`);
   });
 }
 
-module.exports = app;
-module.exports.handler = serverless(app);
+// ES Module Export
+export const handler = serverless(app);
