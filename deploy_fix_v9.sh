@@ -32,7 +32,7 @@ app.get('/api/v1/health', (req, res) => {
 
 if (process.env.NODE_ENV === 'development') {
   app.listen(PORT, () => {
-    console.log(\`🌐 Local server running at http://localhost:\${PORT}\`);
+    console.log(`🌐 Local server running at http://localhost:${PORT}`);
   });
 }
 
@@ -100,3 +100,12 @@ echo ""
 echo "✅ Deployment and Health Check Completed."
 echo "💡 If there are issues, check the logs: vercel logs https://yaasservice.io/api/v1/health"
 
+# 9️⃣ Logs Option
+echo "📜 Would you like to view logs?"
+select yn in "Real-time" "Last 30 Minutes" "No"; do
+    case $yn in
+        "Real-time" ) vercel logs https://yaasservice.io/api/v1/health --scope yaas-services-projects --no-color; break;;
+        "Last 30 Minutes" ) vercel logs https://yaasservice.io/api/v1/health --scope yaas-services-projects --since 30m --no-color; break;;
+        "No" ) echo "🚀 Deployment Complete. Exiting..."; exit;;
+    esac
+done
