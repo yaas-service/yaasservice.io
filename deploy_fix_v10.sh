@@ -4,8 +4,8 @@
 echo "🔄 Switching to Project Directory..."
 cd ~/yaasservice.io || exit
 
-# 2️⃣ Install Enhanced Dependencies
-echo "📦 Installing Enhanced Dependencies..."
+# 2️⃣ Install Minimal Dependencies
+echo "📦 Installing Minimal Dependencies..."
 cat > package.json <<EOL
 {
   "name": "yaasservice.io",
@@ -19,136 +19,42 @@ cat > package.json <<EOL
   },
   "dependencies": {
     "express": "^4.18.2",
-    "serverless-http": "^3.1.0",
-    "cors": "^2.8.5",
-    "@vercel/edge-config": "^1.0.0"
+    "serverless-http": "^3.1.0"
   }
 }
 EOL
 rm -rf node_modules package-lock.json
 npm install
 
-# 3️⃣ Update API Handler with Full Features
-echo "🚀 Deploying Enhanced API Handler..."
+# 3️⃣ Create Minimal API Handler
+echo "🚀 Deploying Minimal API Handler..."
 cat > api/index.js <<EOL
-import express from 'express';
-import serverless from 'serverless-http';
-import cors from 'cors';
-import { get } from '@vercel/edge-config';
-import crypto from 'crypto';
-
-const app = express();
-
-// Enhanced Middleware Stack
-app.use(express.json());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yaasservice.io', 'https://www.yaasservice.io']
-    : '*',
-  methods: ['GET', 'POST', 'OPTIONS']
-}));
-
-// Simple request logger middleware
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  const method = req.method;
-  const path = req.path;
-  console.log(\`\${timestamp} - \${method} \${path}\`);
-  next();
-});
-
-// Core Service Endpoints
-app.get('/api/v1/health', (req, res) => {
-  console.log('Health Check Invoked');
-  res.status(200).json({ 
-    status: "Operational",
-    version: "2.0.0",
-    services: ["core", "edge-config"]
-  });
-});
-
-app.get('/api/v1/config', async (req, res) => {
-  try {
-    const config = await get('appConfig');
-    res.status(200).json({
-      ...config,
-      cacheStatus: "HIT",
-      edge: true
-    });
-  } catch (error) {
-    console.error('Config error:', error);
-    res.status(500).json({ 
-      error: "Configuration Unavailable",
-      edge: false,
-      incidentId: crypto.randomUUID()
+// Minimal API implementation
+export default function handler(req, res) {
+  // Simple health check endpoint
+  if (req.url === '/api/v1/health') {
+    return res.status(200).json({ 
+      status: "Operational",
+      version: "2.0.0"
     });
   }
-});
-
-app.post('/api/v1/analyze', (req, res) => {
-  try {
-    const { data } = req.body;
-    if (!data) {
-      return res.status(400).json({ 
-        error: "Bad Request",
-        message: "Missing analysis data",
-        incidentId: crypto.randomUUID()
-      });
-    }
-    
-    res.json({
-      analysisId: crypto.randomUUID(),
-      timestamp: new Date().toISOString(),
-      insights: {
-        wordCount: data.length,
-        sentiment: "neutral"
-      }
-    });
-  } catch (error) {
-    console.error('Analysis error:', error);
-    res.status(500).json({
-      error: "Analysis Failed",
-      incidentId: crypto.randomUUID()
-    });
-  }
-});
-
-// Error Handling
-app.use((err, req, res, next) => {
-  console.error('🚨 Error:', err);
-  res.status(500).json({
-    error: "System Malfunction",
-    incidentId: crypto.randomUUID()
+  
+  // For any other API endpoints
+  return res.status(200).json({ 
+    message: "YaaS API is running"
   });
-});
-
-// IMPORTANT: This is the correct export format for Vercel serverless functions
-export default function(req, res) {
-  return serverless(app)(req, res);
 }
 EOL
 
 # 4️⃣ Update Vercel Configuration
-echo "🔧 Updating Edge Configuration..."
+echo "🔧 Updating Vercel Configuration..."
 cat > vercel.json <<EOL
 {
   "version": 2,
-  "functions": {
-    "api/index.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/", "dest": "/public/index.html" }
-  ],
-  "build": {
-    "env": {
-      "NODE_ENV": "production",
-      "CLOUDFLARE_ANALYTICS": "3296fcb8f09c45098abb14a4bcf7821b"
-    }
-  }
+  ]
 }
 EOL
 
@@ -215,18 +121,6 @@ cat > public/index.html <<EOL
   <div class="card">
     <h2>Available Endpoints</h2>
     <div class="endpoint">GET /api/v1/health</div>
-    <div class="endpoint">GET /api/v1/config</div>
-    <div class="endpoint">POST /api/v1/analyze</div>
-  </div>
-  
-  <div class="card">
-    <h2>Try the Analyze Endpoint</h2>
-    <textarea id="analyzeText" rows="4" style="width: 100%; margin-bottom: 10px;" 
-      placeholder="Enter text to analyze..."></textarea>
-    <button id="analyzeBtn" style="padding: 8px 16px; background: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;">
-      Analyze
-    </button>
-    <div id="results" style="margin-top: 20px;"></div>
   </div>
   
   <footer>
@@ -239,37 +133,12 @@ cat > public/index.html <<EOL
       .then(response => response.json())
       .then(data => {
         document.getElementById('status').innerHTML = 
-          \`<span style="color: green;">✓</span> \${data.status} (v\${data.version}) - Services: \${data.services.join(', ')}\`;
+          \`<span style="color: green;">✓</span> \${data.status} (v\${data.version})\`;
       })
       .catch(error => {
         document.getElementById('status').innerHTML = 
           \`<span style="color: red;">✗</span> Service Unavailable\`;
       });
-    
-    // Analyze endpoint demo
-    document.getElementById('analyzeBtn').addEventListener('click', () => {
-      const text = document.getElementById('analyzeText').value;
-      if (!text) return;
-      
-      document.getElementById('results').innerHTML = 'Analyzing...';
-      
-      fetch('/api/v1/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: text }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('results').innerHTML = 
-            \`<pre>\${JSON.stringify(data, null, 2)}</pre>\`;
-        })
-        .catch(error => {
-          document.getElementById('results').innerHTML = 
-            \`<div style="color: red;">Error: \${error.message}</div>\`;
-        });
-    });
   </script>
 </body>
 </html>
@@ -278,7 +147,7 @@ EOL
 # 6️⃣ Stage, Commit, and Push Changes
 echo "📤 Staging Changes..."
 git add .
-git commit -m "Fixed rate limiting and timeout issues in serverless function"
+git commit -m "Simplified API to minimal implementation"
 git push origin main
 
 # 7️⃣ Deploy to Vercel
@@ -306,7 +175,7 @@ fi
 # 9️⃣ Perform Health Check
 echo "🔍 Performing Health Check..."
 # Add a short delay to give Vercel time to deploy fully
-sleep 10
+sleep 20
 for url in "https://yaasservice.io/api/v1/health" "https://www.yaasservice.io/api/v1/health"; do
     echo "Testing: $url"
     status_code=$(curl -s -o /dev/null -w "%{http_code}" -L $url)
