@@ -64,6 +64,7 @@ app.use((req, res, next) => {
 
 // Core Service Endpoints
 app.get('/api/v1/health', (req, res) => {
+  console.log('Health Check Invoked');
   res.status(200).json({ 
     status: "Operational",
     version: "2.0.0",
@@ -80,6 +81,7 @@ app.get('/api/v1/config', async (req, res) => {
       edge: true
     });
   } catch (error) {
+    console.error('Config error:', error);
     res.status(500).json({ 
       error: "Configuration Unavailable",
       edge: false,
@@ -108,6 +110,7 @@ app.post('/api/v1/analyze', (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Analysis error:', error);
     res.status(500).json({
       error: "Analysis Failed",
       incidentId: crypto.randomUUID()
@@ -124,7 +127,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-export const handler = serverless(app);
+// IMPORTANT: This is the correct export format for Vercel serverless functions
+export default function(req, res) {
+  return serverless(app)(req, res);
+}
 EOL
 
 # 4️⃣ Update Vercel Configuration
@@ -135,8 +141,7 @@ cat > vercel.json <<EOL
   "functions": {
     "api/index.js": {
       "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": "config/**"
+      "maxDuration": 60
     }
   },
   "routes": [
@@ -278,7 +283,7 @@ EOL
 # 6️⃣ Stage, Commit, and Push Changes
 echo "📤 Staging Changes..."
 git add .
-git commit -m "Enhanced YaaS platform with new endpoints and frontend"
+git commit -m "Fixed serverless export format for Vercel"
 git push origin main
 
 # 7️⃣ Deploy to Vercel
@@ -305,11 +310,13 @@ fi
 
 # 9️⃣ Perform Health Check
 echo "🔍 Performing Health Check..."
+# Add a short delay to give Vercel time to deploy fully
+sleep 5
 for url in "https://yaasservice.io/api/v1/health" "https://www.yaasservice.io/api/v1/health"; do
     echo "Testing: $url"
-    response=$(curl -s -L $url)
     status_code=$(curl -s -o /dev/null -w "%{http_code}" -L $url)
     if [ "$status_code" -eq 200 ]; then
+        response=$(curl -s -L $url)
         echo "✅ Health Check Passed for $url"
         echo "Response: $response"
     else
@@ -325,7 +332,7 @@ echo "📜 Would you like to view logs?"
 select yn in "Real-time" "Last 30 Minutes" "No"; do
     case $yn in
         "Real-time" ) vercel logs https://yaasservice.io/api/v1/health --scope yaas-services-projects --no-color; break;;
-        "Last 30 Minutes" ) vercel logs https://yaasservice.io/api/v1/health --scope yaas-services-projects --since 30m --no-color; break;;
+        "Last 30 Minutes" ) vercel logs https://yaasservice.io/api/v1/health --scope yaas-services-projects --no-color; break;;
         "No" ) echo "🚀 Deployment Complete. Exiting..."; exit;;
     esac
 done

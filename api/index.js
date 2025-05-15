@@ -30,6 +30,7 @@ app.use((req, res, next) => {
 
 // Core Service Endpoints
 app.get('/api/v1/health', (req, res) => {
+  console.log('Health Check Invoked');
   res.status(200).json({ 
     status: "Operational",
     version: "2.0.0",
@@ -46,6 +47,7 @@ app.get('/api/v1/config', async (req, res) => {
       edge: true
     });
   } catch (error) {
+    console.error('Config error:', error);
     res.status(500).json({ 
       error: "Configuration Unavailable",
       edge: false,
@@ -74,6 +76,7 @@ app.post('/api/v1/analyze', (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Analysis error:', error);
     res.status(500).json({
       error: "Analysis Failed",
       incidentId: crypto.randomUUID()
@@ -90,4 +93,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-export const handler = serverless(app);
+// IMPORTANT: This is the correct export format for Vercel serverless functions
+export default function(req, res) {
+  return serverless(app)(req, res);
+}
