@@ -21,7 +21,6 @@ cat > package.json <<EOL
     "express": "^4.18.2",
     "serverless-http": "^3.1.0",
     "cors": "^2.8.5",
-    "express-rate-limit": "^6.8.0",
     "@vercel/edge-config": "^1.0.0"
   }
 }
@@ -36,7 +35,6 @@ import express from 'express';
 import serverless from 'serverless-http';
 import cors from 'cors';
 import { get } from '@vercel/edge-config';
-import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 
 const app = express();
@@ -50,15 +48,12 @@ app.use(cors({
   methods: ['GET', 'POST', 'OPTIONS']
 }));
 
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
-
+// Simple request logger middleware
 app.use((req, res, next) => {
-  console.log(\`\${new Date().toISOString()} - \${req.method} \${req.path}\`);
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const path = req.path;
+  console.log(\`\${timestamp} - \${method} \${path}\`);
   next();
 });
 
@@ -68,7 +63,7 @@ app.get('/api/v1/health', (req, res) => {
   res.status(200).json({ 
     status: "Operational",
     version: "2.0.0",
-    services: ["core", "edge-config", "rate-limiting"]
+    services: ["core", "edge-config"]
   });
 });
 
@@ -141,7 +136,7 @@ cat > vercel.json <<EOL
   "functions": {
     "api/index.js": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 10
     }
   },
   "routes": [
@@ -283,7 +278,7 @@ EOL
 # 6️⃣ Stage, Commit, and Push Changes
 echo "📤 Staging Changes..."
 git add .
-git commit -m "Fixed serverless export format for Vercel"
+git commit -m "Fixed rate limiting and timeout issues in serverless function"
 git push origin main
 
 # 7️⃣ Deploy to Vercel
@@ -311,7 +306,7 @@ fi
 # 9️⃣ Perform Health Check
 echo "🔍 Performing Health Check..."
 # Add a short delay to give Vercel time to deploy fully
-sleep 5
+sleep 10
 for url in "https://yaasservice.io/api/v1/health" "https://www.yaasservice.io/api/v1/health"; do
     echo "Testing: $url"
     status_code=$(curl -s -o /dev/null -w "%{http_code}" -L $url)

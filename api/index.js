@@ -2,7 +2,6 @@ import express from 'express';
 import serverless from 'serverless-http';
 import cors from 'cors';
 import { get } from '@vercel/edge-config';
-import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 
 const app = express();
@@ -16,15 +15,12 @@ app.use(cors({
   methods: ['GET', 'POST', 'OPTIONS']
 }));
 
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
-
+// Simple request logger middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const path = req.path;
+  console.log(`${timestamp} - ${method} ${path}`);
   next();
 });
 
@@ -34,7 +30,7 @@ app.get('/api/v1/health', (req, res) => {
   res.status(200).json({ 
     status: "Operational",
     version: "2.0.0",
-    services: ["core", "edge-config", "rate-limiting"]
+    services: ["core", "edge-config"]
   });
 });
 
