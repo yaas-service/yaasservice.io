@@ -1,11 +1,8 @@
 import express from 'express';
 import serverless from 'serverless-http';
-
 const app = express();
 app.use(express.json());
-
 const PORT = process.env.PORT || 8080;
-
 app.get('/api/v1/health', (req, res) => {
   console.log('Health Check Invoked');
   try {
@@ -15,12 +12,10 @@ app.get('/api/v1/health', (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 if (process.env.NODE_ENV === 'development') {
   app.listen(PORT, () => {
-    echo "Local server running at http://localhost:";
+    console.log(`🌐 Local server running at http://localhost:${PORT}`);
   });
 }
-
 export default app;
 export const handler = serverless(app);
