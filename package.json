@@ -1,7 +1,7 @@
 {
   "name": "yaasservice.io",
-  "version": "1.0.0",
-  "description": "YaaS Service",
+  "version": "2.0.0",
+  "description": "Enhanced YaaS Service Platform",
   "main": "api/index.js",
   "type": "module",
   "scripts": {
@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "serverless-http": "^3.1.0"
+    "serverless-http": "^3.1.0",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^6.8.0",
+    "@vercel/edge-config": "^1.0.0"
   }
 }
