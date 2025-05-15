@@ -32,7 +32,7 @@ app.get('/api/v1/health', (req, res) => {
 
 if (process.env.NODE_ENV === 'development') {
   app.listen(PORT, () => {
-    console.log(\`Local server running at http://localhost:\${PORT}\`);
+    echo "Local server running at http://localhost:${PORT}";
   });
 }
 
@@ -93,7 +93,7 @@ RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.cloudflar
 if [ "$RESPONSE" -eq 200 ]; then
     echo "Cloudflare cache purged successfully."
 else
-    echo "Failed to purge Cloudflare cache. HTTP Status: $RESPONSE"
+    echo "Failed to purge Cloudflare cache."
 fi
 
 # 8️⃣ Perform Health Check
