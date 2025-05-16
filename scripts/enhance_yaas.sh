@@ -1,3 +1,11 @@
+#!/bin/bash
+# enhance_yaas.sh - Enhance YaaS Service 
+
+echo "🚀 Enhancing YaaS Service..."
+
+# Create improved API implementation
+mkdir -p api
+cat > api/index.js <<EOL
 // YaaS Service API - Enhanced Version v2.4.0
 
 // Enhanced sentiment analysis with weights and more keywords
@@ -21,7 +29,7 @@ function analyzeSentiment(text) {
   
   // Text normalization
   const normalizedText = text.toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_\`~()]/g, '')
     .replace(/\s{2,}/g, ' ');
   
   const words = normalizedText.split(' ');
@@ -103,7 +111,7 @@ export default async function handler(req, res) {
   }
   
   // Parse URL path
-  const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
+  const url = new URL(req.url, \`https://\${req.headers.host || 'localhost'}\`);
   const path = url.pathname;
   
   // Health Check Endpoint
@@ -178,3 +186,27 @@ export default async function handler(req, res) {
   // Default response
   return res.status(200).json({ message: "YaaS API is running" });
 }
+EOL
+
+# Create Vercel configuration
+cat > vercel.json <<EOL
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/", "dest": "/public/index.html" }
+  ],
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 5
+    }
+  }
+}
+EOL
+
+# Deploy to Vercel
+echo "🚀 Deploying to Vercel..."
+vercel deploy --prod
+
+echo "✅ YaaS Service Enhanced!"
