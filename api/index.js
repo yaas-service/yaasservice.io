@@ -1,72 +1,107 @@
-import express from 'express';
-import serverless from 'serverless-http';
-import cors from 'cors';
-import jwt from 'jsonwebtoken';
-import rateLimit from 'express-rate-limit';
-import { get } from '@vercel/edge-config';
+// YaaS Service API - v2.3.2
+// Simple serverless implementation optimized for Vercel
 
-const app = express();
+// Helper function for CORS headers
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
 
-// Security Middleware
-app.use(cors({
-  origin: [
-    'https://yaasservice.io',
-    'https://www.yaasservice.io',
-    'https://*.vercel.app'
-  ],
-  methods: ['GET', 'POST', 'OPTIONS']
-}));
-
-app.use(express.json());
-
-// Rate Limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  keyGenerator: (req) => req.headers['x-real-ip'] || req.ip,
-  validate: { trustProxy: true }
-});
-app.use(limiter);
-
-// JWT Configuration
-const JWT_SECRET = process.env.JWT_SECRET;
-const API_KEY = process.env.API_KEY;
-
-// Production Endpoints
-app.get('/api/v1/health', (req, res) => {
-  res.status(200).json({ 
-    status: "Operational",
-    version: "2.2.0",
-    environment: process.env.NODE_ENV
-  });
-});
-
-app.post('/api/v1/auth/token', async (req, res) => {
-  const { apiKey } = req.body;
-  const validKey = await get('PROD_API_KEY');
+// Simple sentiment analysis function
+function analyzeSentiment(text) {
+  const positiveWords = ['good', 'great', 'excellent', 'awesome', 'love', 'happy'];
+  const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'sad'];
   
-  if (!apiKey || apiKey !== validKey) {
-    return res.status(401).json({ error: "Invalid API Key" });
+  const words = text.toLowerCase().split(/\s+/);
+  let positiveCount = 0;
+  let negativeCount = 0;
+  
+  words.forEach(word => {
+    if (positiveWords.includes(word)) positiveCount++;
+    if (negativeWords.includes(word)) negativeCount++;
+  });
+  
+  let sentiment = 'neutral';
+  if (positiveCount > negativeCount) sentiment = 'positive';
+  if (negativeCount > positiveCount) sentiment = 'negative';
+  
+  return {
+    sentiment,
+    stats: {
+      wordCount: words.length,
+      positiveWords: positiveCount,
+      negativeWords: negativeCount
+    }
+  };
+}
+
+// Main serverless handler
+export default async function handler(req, res) {
+  // Set CORS headers for all responses
+  setCorsHeaders(res);
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
   
-  const token = jwt.sign({ 
-    access: 'basic',
-    exp: Math.floor(Date.now() / 1000) + (60 * 60)
-  }, JWT_SECRET);
+  // Parse the URL path
+  const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
+  const path = url.pathname;
   
-  res.json({ token });
-});
-
-app.post('/api/v1/analyze', (req, res) => {
-  const { text } = req.body;
-  if (!text) return res.status(400).json({ error: "Missing text" });
+  // Health Check Endpoint
+  if (path === '/api/v1/health' && req.method === 'GET') {
+    return res.status(200).json({
+      status: "Operational",
+      version: "2.3.2",
+      services: ["analysis", "health"]
+    });
+  }
   
-  res.json({
-    analysis: "success",
-    textLength: text.length,
-    timestamp: new Date().toISOString(),
-    premiumFeatures: process.env.ENABLE_PREMIUM === "true"
-  });
-});
-
-export const handler = serverless(app);
+  // Text Analysis Endpoint
+  if (path === '/api/v1/analyze' && req.method === 'POST') {
+    try {
+      // Read request body
+      const buffers = [];
+      for await (const chunk of req) {
+        buffers.push(chunk);
+      }
+      const data = Buffer.concat(buffers).toString();
+      const { text } = JSON.parse(data);
+      
+      if (!text) {
+        return res.status(400).json({ error: "Missing text parameter" });
+      }
+      
+      // Generate analysis
+      const analysis = analyzeSentiment(text);
+      
+      return res.status(200).json({
+        analysisId: Date.now().toString(36),
+        timestamp: new Date().toISOString(),
+        textLength: text.length,
+        analysis
+      });
+    } catch (error) {
+      return res.status(500).json({ 
+        error: "Analysis failed",
+        message: error.message
+      });
+    }
+  }
+  
+  // Default response for other API routes
+  if (path.startsWith('/api/')) {
+    return res.status(404).json({ 
+      error: "Endpoint not found",
+      availableEndpoints: [
+        "/api/v1/health",
+        "/api/v1/analyze"
+      ]
+    });
+  }
+  
+  // Default static file handler
+  return res.status(200).json({ message: "YaaS API is running" });
+}
