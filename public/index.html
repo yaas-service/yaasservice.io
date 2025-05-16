@@ -1,94 +1,380 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>YaaS Service v2.2</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YaaS - You as a Service</title>
   <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-card: #f8fafc;
+      --border: #e2e8f0;
+      --text: #334155;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       line-height: 1.6;
+      color: var(--text);
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
     }
-    .auth-form {
+    
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    
+    h1, h2, h3 {
+      color: #1e293b;
+      margin-bottom: 15px;
+    }
+    
+    h1 {
+      color: var(--primary);
+    }
+    
+    .card {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
+    }
+    
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    
+    .status.online {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .status.offline {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid var(--primary);
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .endpoint {
+      background: #edf2f7;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-family: monospace;
+      margin: 15px 0;
+    }
+    
+    textarea, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+    
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    button:hover {
+      background: var(--primary-hover);
+    }
+    
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-top: 15px;
+    }
+    
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9em;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .result {
+      margin-top: 15px;
+      padding: 15px;
       background: #f8f9fa;
-      padding: 2rem;
-      border-radius: 8px;
-      margin: 2rem 0;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
     }
-    .endpoint-card {
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 1rem 0;
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>YaaS Service Portal</h1>
-  <div id="status"></div>
+  <header>
+    <h1>YaaS - You as a Service</h1>
+    <p>A powerful, extensible API platform for text analysis and more.</p>
+    <div id="status" class="status">Checking service status...</div>
+  </header>
   
-  <div class="auth-form">
-    <h2>Authentication</h2>
-    <input type="password" id="apiKey" placeholder="Enter API Key">
-    <button onclick="getToken()">Get Access Token</button>
-    <div id="tokenResult"></div>
-  </div>
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" data-tab="demo">Try It</div>
+      <div class="tab" data-tab="auth">Authentication</div>
+      <div class="tab" data-tab="docs">Documentation</div>
+    </div>
+    
+    <div class="tab-content active" id="demo">
+      <h2>Text Analysis Demo</h2>
+      <p>Enter text below to analyze sentiment and other features:</p>
+      
+      <textarea id="analyzeText" placeholder="Enter text to analyze..."></textarea>
+      <div>
+        <label for="tokenInput">Bearer Token (Optional for premium features):</label>
+        <input type="text" id="tokenInput" placeholder="Bearer token for premium features">
+      </div>
+      <button id="analyzeBtn">Analyze Text</button>
+      
+      <div id="analyzeResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="tab-content" id="auth">
+      <h2>Authentication</h2>
+      <p>Get an access token by providing your API key:</p>
+      
+      <div>
+        <label for="apiKeyInput">API Key:</label>
+        <input type="text" id="apiKeyInput" placeholder="Enter your API key">
+      </div>
+      <button id="getTokenBtn">Get Access Token</button>
+      
+      <div id="tokenResult" class="result" style="display: none;"></div>
+      
+      <div style="margin-top: 20px;">
+        <p>For testing, use this API key: <code>673274006fb6b23dc18609e7beb4b1409cb157d373abc2322e5202b47604a2e2</code></p>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="docs">
+      <h2>API Documentation</h2>
+      
+      <h3>Endpoints</h3>
+      <div class="endpoint">GET /api/v1/health</div>
+      <div class="endpoint">POST /api/v1/auth/token</div>
+      <div class="endpoint">POST /api/v1/analyze</div>
+      
+      <h3>Example Code</h3>
+      <pre>
+// Authentication
+fetch('/api/v1/auth/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ apiKey: 'your-api-key' })
+})
+.then(res => res.json())
+.then(data => console.log(data));
 
-  <div class="endpoint-card">
-    <h2>Text Analysis</h2>
-    <textarea id="analysisText"></textarea>
-    <button onclick="analyzeText()">Analyze</button>
-    <div id="analysisResult"></div>
+// Text Analysis
+fetch('/api/v1/analyze', {
+  method: 'POST',
+  headers: { 
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your-token' // Optional
+  },
+  body: JSON.stringify({ text: 'Sample text for analysis' })
+})
+.then(res => res.json())
+.then(data => console.log(data));</pre>
+    </div>
   </div>
+  
+  <footer>
+    &copy; 2025 YaaS Service - v2.3.0
+  </footer>
 
   <script>
-    async function getToken() {
-      const apiKey = document.getElementById('apiKey').value;
-      const resultDiv = document.getElementById('tokenResult');
-      
-      try {
-        const response = await fetch('/api/v1/auth/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey })
-        });
+    // Initialize tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         
-        const data = await response.json();
-        resultDiv.textContent = `Token: ${data.token || 'Error: ' + data.error}`;
-      } catch (error) {
-        resultDiv.textContent = 'Error: ' + error.message;
-      }
-    }
-
-    async function analyzeText() {
-      const text = document.getElementById('analysisText').value;
-      const resultDiv = document.getElementById('analysisResult');
-      
-      try {
-        const response = await fetch('/api/v1/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-        
-        const data = await response.json();
-        resultDiv.textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        resultDiv.textContent = 'Error: ' + error.message;
-      }
-    }
-
-    // Initial status check
-    fetch('/api/v1/health')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('status').innerHTML = `
-          <div style="color: ${data.status === 'Operational' ? 'green' : 'red'}">
-            Service Status: ${data.status} (v${data.version})
-          </div>
-        `;
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
       });
+    });
+    
+    // Check service status
+    fetch('/api/v1/health')
+      .then(response => response.json())
+      .then(data => {
+        const statusElement = document.getElementById('status');
+        statusElement.textContent = `Status: ${data.status} (v${data.version})`;
+        statusElement.className = 'status online';
+      })
+      .catch(error => {
+        const statusElement = document.getElementById('status');
+        statusElement.textContent = 'Status: Offline';
+        statusElement.className = 'status offline';
+      });
+    
+    // API Key handling
+    document.getElementById('getTokenBtn').addEventListener('click', () => {
+      const apiKey = document.getElementById('apiKeyInput').value;
+      if (!apiKey) {
+        alert('Please enter an API key');
+        return;
+      }
+      
+      const resultElement = document.getElementById('tokenResult');
+      resultElement.style.display = 'block';
+      resultElement.innerHTML = 'Requesting token...';
+      
+      fetch('/api/v1/auth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            resultElement.innerHTML = `<div style="color: var(--danger);">${data.error}</div>`;
+          } else {
+            resultElement.innerHTML = `
+              <div>
+                <p><strong>Token:</strong> ${data.token}</p>
+                <p><strong>Expires:</strong> ${data.expiresIn}</p>
+                <button id="copyTokenBtn">Copy Token</button>
+              </div>
+            `;
+            
+            // Also populate token in the analyze tab
+            document.getElementById('tokenInput').value = data.token;
+            
+            // Add copy functionality
+            document.getElementById('copyTokenBtn').addEventListener('click', () => {
+              navigator.clipboard.writeText(data.token);
+              document.getElementById('copyTokenBtn').textContent = 'Copied!';
+              setTimeout(() => {
+                document.getElementById('copyTokenBtn').textContent = 'Copy Token';
+              }, 2000);
+            });
+          }
+        })
+        .catch(error => {
+          resultElement.innerHTML = `<div style="color: var(--danger);">Error: ${error.message}</div>`;
+        });
+    });
+    
+    // Text analysis
+    document.getElementById('analyzeBtn').addEventListener('click', () => {
+      const text = document.getElementById('analyzeText').value;
+      const token = document.getElementById('tokenInput').value;
+      
+      if (!text) {
+        alert('Please enter text to analyze');
+        return;
+      }
+      
+      const resultElement = document.getElementById('analyzeResult');
+      resultElement.style.display = 'block';
+      resultElement.innerHTML = 'Analyzing...';
+      
+      // Set up headers
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      fetch('/api/v1/analyze', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ text })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            resultElement.innerHTML = `<div style="color: var(--danger);">${data.error}</div>`;
+          } else {
+            resultElement.innerHTML = `
+              <h3>Analysis Results:</h3>
+              <p>
+                <strong>Sentiment:</strong> 
+                <span style="color: ${data.analysis.sentiment === 'positive' ? '#22c55e' : 
+                                    data.analysis.sentiment === 'negative' ? '#ef4444' : '#64748b'}">
+                  ${data.analysis.sentiment}
+                </span>
+              </p>
+              <p><strong>Word Count:</strong> ${data.analysis.stats.wordCount}</p>
+              <p><strong>Analysis ID:</strong> ${data.analysisId}</p>
+              ${data.premium ? '<p><strong>Premium Features:</strong> Enabled</p>' : ''}
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+          }
+        })
+        .catch(error => {
+          resultElement.innerHTML = `<div style="color: var(--danger);">Error: ${error.message}</div>`;
+        });
+    });
   </script>
 </body>
 </html>
