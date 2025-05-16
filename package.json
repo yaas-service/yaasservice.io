@@ -1,7 +1,12 @@
 {
   "name": "yaasservice.io",
+<<<<<<< HEAD
   "version": "2.3.1",
   "description": "Enhanced YaaS Service Platform",
+=======
+  "version": "2.3.2",
+  "description": "Production-Ready YaaS Service Platform",
+>>>>>>> temp-recovery
   "main": "api/index.js",
   "type": "module",
   "scripts": {
@@ -11,12 +16,16 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "serverless-http": "^3.1.0",
+    "serverless-http": "^3.2.0",
     "jsonwebtoken": "^9.0.2",
     "@vercel/edge-config": "^1.0.0",
+<<<<<<< HEAD
     "cors": "^2.8.5",
     "express-rate-limit": "^6.8.0",
     "dotenv": "^16.0.3"
+=======
+    "cors": "^2.8.5"
+>>>>>>> temp-recovery
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

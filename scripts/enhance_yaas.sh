@@ -1,161 +1,13 @@
+#!/bin/bash
+# enhance_yaas.sh - Enhance YaaS Service 
+
+echo "🚀 Enhancing YaaS Service..."
+
+# Create improved API implementation
+mkdir -p api
+cat > api/index.js <<EOL
 // YaaS Service API - Enhanced Version v2.4.0
 
-<<<<<<< HEAD
-const app = express();
-
-// Security middleware
-app.use(cors({
-  origin: [
-    'https://yaasservice.io',
-    'https://www.yaasservice.io',
-    'https://*.vercel.app'
-  ],
-  methods: ['GET', 'POST', 'OPTIONS']
-}));
-
-app.use(express.json());
-
-// Rate limiting for production
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  keyGenerator: (req) => req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip,
-  standardHeaders: true,
-  legacyHeaders: false
-}));
-
-// Sentiment analysis function
-function analyzeSentiment(text) {
-  const positiveWords = ['good', 'great', 'excellent', 'awesome', 'amazing', 'love', 'happy', 'like', 'enjoy'];
-  const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'dislike', 'poor', 'sad', 'angry', 'disastrous'];
-  
-  const words = text.toLowerCase().split(/\s+/);
-  let positiveCount = 0;
-  let negativeCount = 0;
-  
-  words.forEach(word => {
-    if (positiveWords.includes(word)) positiveCount++;
-    if (negativeWords.includes(word)) negativeCount++;
-  });
-  
-  let sentiment = 'neutral';
-  if (positiveCount > negativeCount) sentiment = 'positive';
-  if (negativeCount > positiveCount) sentiment = 'negative';
-  
-  const confidence = Math.min(1, Math.abs(positiveCount - negativeCount) / Math.max(words.length / 10, 1));
-  
-  return {
-    sentiment,
-    confidence: parseFloat(confidence.toFixed(2)),
-    stats: {
-      wordCount: words.length,
-      positiveWords: positiveCount,
-      negativeWords: negativeCount
-    }
-  };
-}
-
-// Health check endpoint
-app.get('/api/v1/health', (req, res) => {
-  console.log('Health check hit');
-  res.status(200).json({ 
-    status: "Operational",
-    version: "2.3.1",
-    environment: process.env.NODE_ENV || 'production'
-  });
-});
-
-// Token generation endpoint
-app.post('/api/v1/auth/token', async (req, res) => {
-  console.log('Token request received');
-  const { apiKey } = req.body;
-  
-  if (!apiKey) {
-    return res.status(400).json({ error: "API key is required" });
-  }
-  
-  try {
-    // Get the API key from Edge Config
-    const validKey = await get('PROD_API_KEY');
-    
-    if (apiKey !== validKey) {
-      return res.status(401).json({ error: "Invalid API key" });
-    }
-    
-    // Create JWT token
-    const token = jwt.sign({
-      access: 'api',
-      premium: true,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour
-    }, process.env.JWT_SECRET);
-    
-    res.json({
-      token,
-      expiresIn: '1h',
-      tokenType: 'Bearer'
-    });
-    
-  } catch (error) {
-    console.error('Error in token generation:', error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// Text analysis endpoint
-app.post('/api/v1/analyze', (req, res) => {
-  console.log('Analyze request received');
-  const { text } = req.body;
-  
-  if (!text) {
-    return res.status(400).json({ error: "Text is required" });
-  }
-  
-  // Check for premium features
-  let isPremium = false;
-  const authHeader = req.headers.authorization;
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    try {
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      isPremium = decoded.premium === true;
-    } catch (err) {
-      // Continue with basic analysis if token is invalid
-    }
-  }
-  
-  // Perform sentiment analysis
-  const analysis = analyzeSentiment(text);
-  
-  // Add premium features if applicable
-  if (isPremium) {
-    analysis.premium = {
-      keyPhrases: text.split(/[.!?]/).filter(s => s.trim().length > 10).map(s => s.trim()).slice(0, 3),
-      languageDetection: 'en',
-      readabilityScore: Math.min(100, Math.max(0, 50 + text.length / 20))
-    };
-  }
-  
-  // Generate unique ID
-  const analysisId = Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-  
-  res.json({
-    analysisId,
-    timestamp: new Date().toISOString(),
-    premium: isPremium,
-    textLength: text.length,
-    analysis
-  });
-});
-
-// Create serverless handler
-const handler = serverless(app);
-
-// Export for Vercel
-export default async function(req, res) {
-  return handler(req, res);
-=======
 // Enhanced sentiment analysis with weights and more keywords
 function analyzeSentiment(text) {
   // Expanded word lists with weights
@@ -177,7 +29,7 @@ function analyzeSentiment(text) {
   
   // Text normalization
   const normalizedText = text.toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_\`~()]/g, '')
     .replace(/\s{2,}/g, ' ');
   
   const words = normalizedText.split(' ');
@@ -259,7 +111,7 @@ export default async function handler(req, res) {
   }
   
   // Parse URL path
-  const url = new URL(req.url, `https://${req.headers.host || 'localhost'}`);
+  const url = new URL(req.url, \`https://\${req.headers.host || 'localhost'}\`);
   const path = url.pathname;
   
   // Health Check Endpoint
@@ -333,5 +185,28 @@ export default async function handler(req, res) {
   
   // Default response
   return res.status(200).json({ message: "YaaS API is running" });
->>>>>>> temp-recovery
 }
+EOL
+
+# Create Vercel configuration
+cat > vercel.json <<EOL
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/", "dest": "/public/index.html" }
+  ],
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 5
+    }
+  }
+}
+EOL
+
+# Deploy to Vercel
+echo "🚀 Deploying to Vercel..."
+vercel deploy --prod
+
+echo "✅ YaaS Service Enhanced!"
