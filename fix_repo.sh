@@ -1,3 +1,9 @@
+# Create the scripts directory and move the test script if it exists
+mkdir -p scripts
+[ -f test_yaas.sh ] && mv test_yaas.sh scripts/test_yaas.sh
+
+# Create the fixed check_and_push script
+cat > scripts/check_and_push.sh << 'EOL'
 #!/bin/bash
 # check_and_push.sh - Safe Git Check and Push Script (Fixed Version)
 
@@ -217,3 +223,10 @@ fi
 
 echo -e "\n${GREEN}🎉 All operations completed successfully!${NC}"
 echo -e "${BLUE}Your YaaS changes have been pushed and (if selected) deployed.${NC}"
+EOL
+
+# Make the script executable
+chmod +x scripts/check_and_push.sh
+
+# Run the script
+./scripts/check_and_push.sh
